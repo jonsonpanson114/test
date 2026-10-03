@@ -1,0 +1,111 @@
+<!doctype html>
+<!--
+  playful-infographic-deck template
+  1) copy this file + run scripts/setup_fonts.sh <dir> so that fonts.css sits next to it
+  2) put product images in assets/ and swap the .ph placeholders for background-image / <img>
+  3) node scripts/render.js deck.html out --scale 2 --pdf deck.pdf
+  Slides are 1920x1080 <section class="slide">. Page numbers fill themselves (see script at the bottom).
+-->
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Deck</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --cream:#F4EFE4; --ink:#23292B; --sub:#586064; --accent:#2F5D62;   /* --accent = the product's own colour (e.g. the teal of the real booth) */
+  --y:#F6E27A; --o:#F5B25A; --b:#7DBBE0; --p:#F3B3B0; --g:#C5DDAE;    /* sticky-note colours: same set on every slide */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#777;font-family:"ZMG","NJP",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.slide{width:1920px;height:1080px;position:relative;overflow:hidden;background:var(--cream);margin:0 auto 40px}
+.abs{position:absolute}
+.hand{font-family:"HAND","ZMG",sans-serif}
+.en{font-family:"OUT","ZMG",sans-serif}
+.dots{background-image:radial-gradient(rgba(35,41,43,.13) 2px,transparent 2.5px);background-size:34px 34px}   /* quiet dotted-paper background */
+.mark{background:linear-gradient(transparent 56%,rgba(245,178,90,.75) 56%);padding:0 .1em}                    /* highlighter pen on the one key phrase */
+.pg{position:absolute;right:56px;bottom:30px;font-family:"HAND";font-size:24px;color:var(--sub)}
+h2.t{position:absolute;left:90px;top:48px;font-size:62px;font-weight:900;line-height:1.2}
+p.l{position:absolute;left:94px;font-family:"HAND";font-size:26px;color:var(--sub)}
+
+/* ---- components. Rotate everything a little (--r). Straight rows of cards are what makes a deck look like PowerPoint ---- */
+.stk{position:absolute;background:var(--c,var(--y));padding:24px 26px;transform:rotate(var(--r,0deg));
+  box-shadow:0 14px 20px -12px rgba(0,0,0,.45),0 2px 0 rgba(0,0,0,.05)}
+.stk::before{content:"";position:absolute;top:-15px;left:50%;width:100px;height:30px;margin-left:-50px;background:rgba(255,255,255,.6);
+  transform:rotate(-3deg);box-shadow:0 1px 3px rgba(0,0,0,.18)}                /* masking tape */
+.stk.nt::before{display:none}
+.pol{position:absolute;background:#fff;padding:14px 14px 56px;transform:rotate(var(--r,0deg));box-shadow:0 18px 26px -14px rgba(0,0,0,.5)}
+.pol .im{display:block;width:100%;background-size:cover;background-position:center}
+.pol .cap{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-family:"HAND";font-size:22px}   /* say "photo" or "CG" here */
+.pol::before{content:"";position:absolute;top:-16px;left:50%;width:108px;height:30px;margin-left:-54px;background:rgba(246,226,122,.85);transform:rotate(2deg);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.strip{position:absolute;background:#fff;padding:18px 44px;transform:rotate(var(--r,0deg));box-shadow:0 12px 18px -12px rgba(0,0,0,.45);   /* torn paper for headlines on busy photos */
+  clip-path:polygon(0 4%,3% 0,8% 5%,14% 1%,22% 4%,31% 0,40% 4%,50% 1%,60% 5%,70% 0,80% 4%,90% 1%,96% 5%,100% 1%,100% 96%,95% 100%,88% 95%,80% 99%,70% 95%,60% 100%,50% 96%,40% 100%,30% 95%,20% 99%,10% 95%,5% 100%,0 96%)}
+.stamp{position:absolute;width:var(--s,170px);height:var(--s,170px);border-radius:50%;background:#fff;border:4px dashed var(--accent);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;transform:rotate(var(--r,0deg));box-shadow:0 10px 16px -10px rgba(0,0,0,.5)}   /* a key number */
+.stamp b{font-family:"OUT";font-weight:700;font-size:46px;line-height:1;color:var(--accent)}
+.stamp b small{font-size:22px}
+.stamp span{font-size:16px;font-weight:700;line-height:1.3;margin-top:6px}
+.tagc{position:absolute;transform:rotate(var(--r,0deg));padding:22px 24px;border-radius:14px;background:var(--c,#E9DCC3);box-shadow:0 14px 20px -12px rgba(0,0,0,.45)}   /* paper tag with a punched hole */
+.tagc::before{content:"";position:absolute;top:14px;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--cream);box-shadow:inset 0 2px 3px rgba(0,0,0,.3)}
+.lb{position:absolute;font-family:"HAND";font-size:27px;line-height:1.3;padding:10px 20px;background:var(--c);transform:rotate(var(--r,0deg));box-shadow:0 8px 12px -8px rgba(0,0,0,.45)}   /* label for hand-drawn arrows */
+.note{font-family:"HAND";font-size:17px;color:var(--sub);line-height:1.6}   /* conditions / footnotes: keep them, small, but readable */
+.ph{background:repeating-linear-gradient(45deg,#e6e0d2 0 14px,#efe9db 14px 28px);display:flex;align-items:center;justify-content:center;font-family:"OUT";letter-spacing:.2em;color:#9a927f}
+
+/* ---- slide recipes ---- */
+#s1{background:#d9d2c3}
+#s1 .wall{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.12) 0 90px,transparent 90px 180px),linear-gradient(135deg,#F5B25A,#F6E27A 40%,#7DBBE0)}
+#s1 .copy{left:70px;top:640px;--r:-1.5deg;padding:22px 52px 26px}
+#s1 .copy h1{font-size:72px;font-weight:900;white-space:nowrap}
+#s2 .sol{position:absolute;display:flex;align-items:center;gap:14px;padding:14px 24px 14px 14px;border-radius:999px;background:var(--c);transform:rotate(var(--r,0deg));box-shadow:0 10px 16px -10px rgba(0,0,0,.5);width:420px}
+#s2 .sol i{flex:0 0 52px;height:52px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-family:"HAND";font-size:28px;font-style:normal}
+#s2 .sol b{display:block;font-size:24px;font-weight:900}
+</style>
+</head>
+<body>
+
+<!-- 1 COVER: real wall of sticky notes (or any busy photo) + torn headline strip + key-number stamps + product photo as a polaroid -->
+<section class="slide" id="s1">
+  <div class="wall"></div>
+  <div class="stk" style="left:90px;top:110px;width:560px;height:400px;--c:#F0EFED;--r:-2deg;display:flex;align-items:center;justify-content:center"><span class="en" style="font-size:112px;font-weight:700">PRODUCT</span></div>
+  <div class="stk" style="left:520px;top:80px;--c:var(--p);--r:7deg"><span class="en" style="font-size:44px;font-weight:600;line-height:1.1">Hello.<br>Come with me?</span></div>
+  <div class="pol" style="left:1020px;top:120px;width:820px;--r:3deg"><div class="im ph" style="height:430px">PRODUCT PHOTO</div><div class="cap">写真（またはCG）であることを書く</div></div>
+  <div class="strip copy"><h1>キャッチコピー。<span class="mark">ここを強調。</span></h1></div>
+  <div class="stamp" style="left:1210px;top:640px;--r:-8deg"><b>4<small>人用</small></b><span>数字は<br>スタンプで</span></div>
+  <div class="stamp" style="left:1420px;top:660px;--r:6deg"><b>5.61<small>㎡</small></b><span>面積</span></div>
+  <div class="stamp" style="left:1630px;top:630px;--r:-5deg"><b>24.2<small>dB</small></b><span>条件つきの数値※</span></div>
+  <div class="abs note" style="left:1000px;top:985px;width:840px;background:rgba(255,255,255,.85);padding:8px 14px;border-radius:6px">※数値には必ず測定条件・参考値である旨を添える。</div>
+</section>
+
+<!-- 2 ISSUE -> SOLUTION: problems as sticky notes (customer's own words), answers as colour-matched pills, one polaroid in between -->
+<section class="slide dots" id="s2">
+  <h2 class="t">こんな<span class="mark">お悩み</span>、ありませんか？</h2>
+  <p class="l" style="top:140px">課題の一文は、お客さんが実際に口にする言葉で。</p>
+  <div class="stk" style="left:90px;top:300px;width:420px;height:250px;--c:var(--o);--r:-2deg"><div class="hand" style="font-size:42px;color:rgba(35,41,43,.5)">01</div><div style="font-size:27px;font-weight:900">課題その1</div><p class="hand" style="font-size:22px;margin-top:8px">補足は手書き風で。</p></div>
+  <div class="stk" style="left:540px;top:290px;width:420px;height:250px;--c:var(--y);--r:1.6deg"><div class="hand" style="font-size:42px;color:rgba(35,41,43,.5)">02</div><div style="font-size:27px;font-weight:900">課題その2</div></div>
+  <div class="pol" style="left:1080px;top:230px;width:700px;--r:2deg"><div class="im ph" style="height:380px">PHOTO</div><div class="cap">解決のイメージ</div></div>
+  <div class="sol" style="left:1060px;top:720px;--c:var(--o);--r:-1.5deg"><i>1</i><b>答えその1</b></div>
+  <div class="sol" style="left:1480px;top:732px;--c:var(--y);--r:1.5deg"><i>2</i><b>答えその2</b></div>
+  <div class="abs" style="left:90px;top:900px;font-size:40px;font-weight:900">まとめの一文は、<span class="mark">大きく一行</span>で。</div>
+  <div class="pg"></div>
+</section>
+
+<!-- 3 CLOSING: same sticky wall as the cover (bookend), steps as notes, one call to action. Leave contact as a visible placeholder, never invent it -->
+<section class="slide" id="s3">
+  <div class="wall abs" style="inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.12) 0 90px,transparent 90px 180px),linear-gradient(135deg,#7DBBE0,#F6E27A 60%,#F5B25A)"></div>
+  <div class="strip" style="left:80px;top:60px;--r:-1deg"><h2 style="font-size:52px;font-weight:900;line-height:1.4">「置く」だけではなく、<br><span class="mark">居場所</span>をつくる。</h2></div>
+  <div class="stk" style="left:90px;top:330px;width:380px;height:300px;--c:var(--o);--r:-2deg"><div class="en" style="font-size:26px;font-weight:700;opacity:.6">STEP 01</div><div style="font-size:30px;font-weight:900;margin-top:6px">使い方を伺う</div></div>
+  <div class="stk" style="left:510px;top:345px;width:380px;height:300px;--c:var(--b);--r:1.8deg"><div class="en" style="font-size:26px;font-weight:700;opacity:.6">STEP 02</div><div style="font-size:30px;font-weight:900;margin-top:6px">仕様を組み合わせる</div></div>
+  <div class="abs" style="left:90px;top:700px;width:1230px;background:var(--accent);color:#fff;border-radius:22px;padding:30px 40px;transform:rotate(-.6deg);display:flex;justify-content:space-between;align-items:center;box-shadow:0 18px 26px -14px rgba(0,0,0,.6)">
+    <div style="font-size:36px;font-weight:900;line-height:1.5">まずは、使いたい場面をお聞かせください。</div>
+    <div class="hand" style="font-size:22px;border-left:3px dashed rgba(255,255,255,.5);padding-left:30px">お問い合わせ<br>［部署名・担当者名］<br>［TEL / E-mail］</div>
+  </div>
+  <div class="pg"></div>
+</section>
+
+<script>
+// page numbers: "n / total", filled for every .pg so reordering slides never needs a find-and-replace
+const slides=[...document.querySelectorAll('.slide')];
+slides.forEach((s,i)=>{const p=s.querySelector('.pg'); if(p) p.textContent=`${i+1} / ${slides.length}`;});
+</script>
+</body>
+</html>
